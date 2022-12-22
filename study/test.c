@@ -5,64 +5,60 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/21 12:05:24 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/21 16:58:11 by hyoh             ###   ########.fr       */
+/*   Created: 2022/12/22 13:47:25 by hyoh              #+#    #+#             */
+/*   Updated: 2022/12/22 16:14:55 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
-#include <stdlib.h>
+#include <fcntl.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-typedef struct s_children{
-	pid_t	pidd;
-	int		order;
-}	t_children;
-
-void	pipex(int argc, char **argv, t_children info)
+int main(int argc, char **argv)
 {
-	pid_t	pid;
+	pid_t	pid1, pid2;
 	int		fds[2];
+	int		fd_file1, fd_file2;
+	char	buff[199];
+	char	*envp[] = {0};
 
-	printf("**** parent start ****\n");
-	pipe(fds);
-	for (int i = 0; i < argc - 3; i++)
+	if (pipe(fds))
+		printf("error\n");
+	pid1 = fork();
+
+	if (pid1 < 0)
+		printf("error\n");
+	else if (pid1 == 0)
 	{
-		pid = fork();
-		if (pid == 0)
+		printf("first child\n");
+		if ((fd_file1 = open("file1.txt", O_RDWR)) == -1)
+			printf("open error\n");
+		dup2(fds[1], 1);
+		char *argg[]={"/bin/ls",NULL};
+		execve("/bin/ls", argg, envp);
+	}
+	else
+	{
+		pid2 = fork();
+
+		if (pid2 < 0)
+			printf("error\n");
+		else if (pid2 == 0)
 		{
-			// info.pidd = pid;
-			printf("\n* child start (%d)*\n", info.pidd);
-			break ;	// break 안 하면 자식 프로세스가 fork함. 부모프로세스는 하나만 존재해야 한다.
+			printf("second child\n");
+			if ((fd_file2 = open("file2.txt", O_RDWR)) == -1)
+				printf("open error\n");
+			dup2(fds[0], 0);
+			dup2(fd_file2, 1);
+			char *argg[]={"/usr/bin/grep","a", NULL};
+			execve("/usr/bin/grep", argg, envp);
 		}
-		if (pid != 0) // parent
+		else
 		{
-			info.pidd = pid;
-			info.order = i;
-			printf("**** (fork <%d, %d>)\n", info.pidd, info.order);
+			sleep(2);
+			printf("end\n");
+			exit(0);
 		}
 	}
-
-	if (pid == 0) // child
-	{
-		printf("* %d, %d\n", info.pidd, info.order);
-		printf("* child end *\n\n");
-	}
-	else if (pid > 0) // parent
-	{
-		//waitpid
-		printf("**** sleep~~~~\n\n");
-		sleep(2);
-		printf("**** parent end ****\n");
-	}
-}
-
-int main(int argc, char *argv[])
-{
-	t_children	info;
-
-	info.pidd = -1;
-	info.order = -1;
-	printf("%d\n", argc);
-	pipex(argc, argv, info);
 }
