@@ -5,87 +5,85 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/18 13:41:17 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/21 12:42:19 by hyoh             ###   ########.fr       */
+/*   Created: 2022/12/22 17:48:50 by hyoh              #+#    #+#             */
+/*   Updated: 2022/12/22 19:12:11 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-int	parsing_errorcheck(int argc, char **argv) // 굳이 파싱 안 해도 될듯..
+void	first_cmd(int current, int fds[])
 {
-	char	*infile;
-	// infile
-	infile = *argv;
-	ft_printf("infile: %s\n", infile);
+	int		infile_fd;
+	char	*arg[]={"cat", NULL};
 
-	// cmd
-	while (--argc != 0)
-	{
-		ft_printf("%s\n", *argv);
-	}
+	close(fds[0]);
+	printf("first child prcoess start\n");
+	infile_fd = open("infile", O_RDWR, 0644);
+	if (infile_fd < 0)
+		printf("open error\n");
+	printf("outfile fd : %d\n", infile_fd);
 
-	// outfile
-	ft_printf("outfile: %s\n", *argv);
-
-	return (0);
+	dup2(infile_fd, 0);
+	dup2(fds[1], 1);
+	execve("/bin/cat", arg, NULL);
 }
 
-int	pipex(int cmd_num, char **argv)
+void	last_cmd(int current, int fds[])
+{
+	int		outfile_fd;
+	char	*arg[]={"cat", NULL};
+
+	close(fds[1]);
+	printf("last child prcoess start\n");
+	outfile_fd = open("outfile", O_RDWR, 0644);
+	if (outfile_fd < 0)
+		printf("open error\n");
+	printf("outfile fd : %d\n", outfile_fd);
+
+	dup2(fds[0], 0);
+	dup2(outfile_fd, 1);
+	execve("/bin/cat", arg, NULL);
+}
+
+void	parent()
+{
+	int		wait_status;
+
+	// while(wait(&wait_status) != -1);
+	exit(0);
+}
+
+int main(int argc, char **argv)
 {
 	pid_t	pid;
-	int		fds[2]; // old, new??????
+	int		fds[2];
+	int		current;
 
-	pipe(fds);
-	pid = fork();
-	if (pid == -1)
-		return (-1);
-
-	// 부모 프로세스라면
-	if (pid != 0)
+	current = 0;
+	printf("start\n");
+	if (pipe(fds) < 0)
 	{
-		printf("<parent process start>\n");
-		while (cmd_num-- != 1/* cmd 개수-1만큼 */)
+		printf("error\n");
+		exit(0);
+	}
+	printf("fds : [%d] [%d]\n", fds[0], fds[1]);
+	while (++current != 3)
+	{
+		pid = fork();
+		if (pid < 0)
 		{
-			fork();
+			printf("error\n");
+			exit(0);
 		}
-		wait();
-		printf("<parent process end>\n");
+		else if (pid == 0)
+			break ;
 	}
 
-	// 자식 프로세스라면
-	if (pid == 0)
-	{
-		printf("<child process start>\n");
-		if (is1stCmd)
-		{
-			open file1 with 0_CREAT option;
-			dup2(file1, stdin);
-			close(file1);
-			dup2(fds[WRITE], stdout);
-		}
-		else if (isLastCmd)
-		{
-			open file1 with 0_CREAT option;
-			dup2(fds[READ], stdin);
-			dup2(fds[WRITE], file2);
-			close(file2);
-		}
-		else
-		{
-			dup2(fds[READ], stdin);
-			dup2(fds[WRITE], stdout);
-		}
-		access();
-		execve();
-		printf("<child process end>\n");
-	}
-}
-
-int main(int argc, char *argv[])
-{
-	ft_printf("%d\n", argc);
-	if (parsing_errorcheck(argc, ++argv) == -1)
-		return (0);
-	pipex(argc - 2, argv);
+	if (pid == 0 && current == 1)
+		first_cmd(current, fds);
+	else if (pid == 0 && current == 2)
+		last_cmd(current, fds);
+	else if (pid != 0)
+		parent();
 }

@@ -80,7 +80,6 @@ int main(int argc, char **argv)
 	}
 	if (pid != 0)
 	{
-		dprintf(fds[1], "hi\n");
 		sleep(3); // wait으로 고치기
 		printf("=========  [P] parent process end  =========\n\n");
 		for(int i = 0; i < current_num; i++)
