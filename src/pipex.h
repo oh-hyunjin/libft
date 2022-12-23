@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/18 14:38:56 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/22 17:49:27 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/23 13:44:36 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,13 @@
 typedef struct s_children{
 	int	pid;
 }	t_children;
+
+// libft_test.c
+char	*ft_strjoin(char const *s1, char const *s2);
+int		get_cnt(char const *s, char c);
+char	*ft_split_2(char const *s, char c, int start);
+char	**ft_split(char const *s, char c);
+char	*ft_strnstr(const char *haystack, const char *needle, size_t n);
 
 
 #endif
