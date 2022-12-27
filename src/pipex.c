@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/22 17:48:50 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/27 14:40:44 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/27 14:48:53 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,16 +135,15 @@ void	other_cmd(char *argv_cmd, char **env, int pipe_fd[])
 void	make_proc(int argc, int pipe_fd[], int *current, int *pid)
 {
 	*current = -1;
+	if (pipe(pipe_fd) < 0)
+		error_exit(3);
 	while (++(*current) != argc - 3)
 	{
-		if (pipe(pipe_fd) < 0)
-			error_exit(3);
 		*pid = fork();
 		if (*pid < 0)
 			error_exit(2);
 		else if (*pid == 0)
 			break ;
-		
 	}
 }
 
