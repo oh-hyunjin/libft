@@ -1,8 +1,0 @@
-total 152
--rwxr-xr-x  1 hyoh  2022_seoul  50472 Dec 23 14:13 a.out
--rw-r--r--  1 hyoh  2022_seoul      3 Dec 22 18:19 infile
--rw-r--r--  1 hyoh  2022_seoul   2576 Dec 23 13:44 libft_test.c
--rw-r--r--  1 hyoh  2022_seoul      1 Dec 23 14:13 outfile
--rw-r--r--  1 hyoh  2022_seoul   3403 Dec 23 14:13 pipex.c
--rw-r--r--  1 hyoh  2022_seoul   1524 Dec 23 13:44 pipex.h
--rw-r--r--  1 hyoh  2022_seoul   2183 Dec 21 12:42 pipex_.c

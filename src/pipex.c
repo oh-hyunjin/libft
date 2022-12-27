@@ -6,22 +6,36 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/22 17:48:50 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/23 14:13:41 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/27 14:40:44 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
+#include <string.h>
 
-void	error_exit()
+void	error_exit(int num)
 {
-	printf("error\n");
-	exit(0);
+	if (num == 1)
+		write(2, "file open fail\n", 15);
+	else if (num == 2)
+		write(2, "fork fail\n", 10);
+	else if (num == 3)
+		write(2, "pipe fail\n", 10);
+	else if (num == 127)
+	{
+		write(2, "command not found\n", 18);
+		exit(127);
+	}
+	exit(1);
 }
 
-char	*get_path(char *argv, char *cmd, char **env) // 삼중 포인터..
+char	*get_path(char *cmd, char **env)
 {
 	char	*needle;
 	char	**paths;
+
+	if (access(cmd, X_OK) == 0)
+		return (cmd);
 
 	while(*env != NULL)
 	{
@@ -39,106 +53,136 @@ char	*get_path(char *argv, char *cmd, char **env) // 삼중 포인터..
 			break ;
 		paths++;
 	}
-	if (paths == NULL)
-		error_exit();
 	return(*paths);
 }
 
-void	first_cmd(char *argv, char **env, int fds[])
+char	**parse_cmd(char *before)
+{
+	char	**after;
+	char	*s_quote;
+	int		quote_flag;
+	int		i;
+
+	s_quote = before;
+	after = ft_split(before, ' ');
+	i = -1;
+	quote_flag = 0;
+	while (after[++i] != NULL)
+	{
+		if (after[i][0] == '\'')
+		{
+			quote_flag = 1;
+			after[i] = ft_substr(s_quote, 1, ft_strlen(s_quote) - 2);
+			continue ;
+		}
+		if (quote_flag == 1)
+			after[i] = NULL; //free(after[i]);????
+		else
+			s_quote += (ft_strlen(after[i]) + 1);
+	}
+	return (after);
+}
+
+void	first_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[])
 {
 	int		infile_fd;
-	char	**split_cmd; // malloc?
+	char	**cmd;
 	char	*path;
 
-	close(fds[0]);
-	infile_fd = open("infile", O_RDWR, 0644);
+	close(pipe_fd[READ]);
+	infile_fd = open(file, O_RDWR, 0644);
 	if (infile_fd < 0)
-		error_exit();
-
-	split_cmd = ft_split(argv, ' '); // free하기
-	path = get_path(argv, split_cmd[0], env);
+		error_exit(1);
+	cmd = parse_cmd(argv_cmd);
+	path = get_path(cmd[0], env);
 	dup2(infile_fd, 0);
-	dup2(fds[1], 1);
-	execve(path, split_cmd, NULL); //env넣기
-	exit(127);
+	dup2(pipe_fd[WRITE], 1);
+	execve(path, cmd, env);
+	error_exit(127);
 }
 
-void	last_cmd(char *argv, int fds[])
+void	last_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[])
 {
 	int		outfile_fd;
-	char	**argv_cmd;
-	char	**paths;
+	char	**cmd;
+	char	*path;
 
-	usleep(100); //sleep이랑 차이점
-	close(fds[1]);
-	printf("\nlast child prcoess start\n");
-	outfile_fd = open("outfile", O_RDWR, 0644);
+	close(pipe_fd[WRITE]);
+	outfile_fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0644);
 	if (outfile_fd < 0)
-		error_exit();
-	printf("[ fd ] : %d\n", outfile_fd);
-
-	// path argv
-	argv_cmd = ft_split(argv, ' '); // free하기
-	int i = 0;
-	printf("[argv] : ");
-	while (argv_cmd[i] != NULL)
-		printf("%s\n", argv_cmd[i++]);
-	// parse path
-	paths = ft_split("/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki", ':'); // free
-	for (int i = 0; i < 10; i++)
-	{
-		*paths = ft_strjoin(*paths, ft_strjoin("/", argv_cmd[0]));
-		if (access(*paths, X_OK) == 0)
-		{
-			printf("[PATH] : %s\n", *paths);
-			break ;
-		}
-		paths++;
-	}
-
-	dup2(fds[0], 0);
+		error_exit(1);
+	cmd = parse_cmd(argv_cmd);
+	path = get_path(cmd[0], env);
+	dup2(pipe_fd[READ], 0);
 	dup2(outfile_fd, 1);
-	execve(*paths, argv_cmd, NULL);
-	exit(127);
+	execve(path, cmd, env);
+	error_exit(127);
 }
 
-void	parent()
+void	other_cmd(char *argv_cmd, char **env, int pipe_fd[])
 {
-	// int		wait_status;
+	char	**cmd;
+	char	*path;
 
-	// while(wait(&wait_status) != -1);
-	exit(0);
+	cmd = parse_cmd(argv_cmd);
+	path = get_path(cmd[0], env);
+	dup2(pipe_fd[READ], 0);
+	dup2(pipe_fd[WRITE], 1);
+	execve(path, cmd, env);
+	error_exit(127);
 }
 
-void	make_proc(int argc, int fds[], int *current, int *pid)
+void	make_proc(int argc, int pipe_fd[], int *current, int *pid)
 {
-	if (pipe(fds) < 0)
-		error_exit();
-	printf("fds : [%d] [%d]\n", fds[0], fds[1]);
+	*current = -1;
 	while (++(*current) != argc - 3)
 	{
+		if (pipe(pipe_fd) < 0)
+			error_exit(3);
 		*pid = fork();
 		if (*pid < 0)
-			error_exit();
+			error_exit(2);
 		else if (*pid == 0)
 			break ;
+		
 	}
+}
+
+void	pipex_init(int argc, char **argv, int *hd_flag)
+{
+	*hd_flag = 0;
+	if (argv[1] == "here_doc")
+		*hd_flag = 1;
+	if (*hd_flag == 0 && argc < 5)
+		exit(EXIT_FAILURE);
+	else if (*hd_flag == 1 && argc < 6)
+		exit(EXIT_FAILURE);
 }
 
 int main(int argc, char **argv, char **env)
 {
 	pid_t	pid;
-	int		fds[2];
+	int		pipe_fd[2];
 	int		current;
+	int		hd_flag;
+	int		cmd_idx;
 
-	current = -1;
-	printf("start\n");
+	pipex_init(argc, argv, &hd_flag);
+	make_proc(argc, pipe_fd, &current, &pid);
 
-	make_proc(argc, fds, &current, &pid);
+	cmd_idx = current + 2 + hd_flag;
 	if (pid == 0 && current == 0)
-		first_cmd(argv[current + 2], env, fds);
+		first_cmd(argv[1], argv[cmd_idx], env, pipe_fd);
 	else if (pid == 0 && current == argc - 4)
-		last_cmd(argv[current + 2], fds);
-	else if (pid != 0)
-		parent();
+		last_cmd(argv[argc - 1], argv[cmd_idx], env, pipe_fd);
+	else if (pid == 0)
+		other_cmd(argv[cmd_idx], env, pipe_fd);
+
+	close(pipe_fd[READ]);
+	close(pipe_fd[WRITE]); // 안하면 무한로딩
+	int		wait_status;
+	int		last_status;
+	waitpid(pid, &last_status, 0);
+	while (wait(&wait_status) != -1); // 0넣어서 변수 없애도 되나
+	exit(WEXITSTATUS(last_status));
 }
