@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/22 17:48:50 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/27 14:48:53 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/27 16:26:23 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,13 +132,14 @@ void	other_cmd(char *argv_cmd, char **env, int pipe_fd[])
 	error_exit(127);
 }
 
-void	make_proc(int argc, int pipe_fd[], int *current, int *pid)
+void	make_proc(int argc, int pipe_fd[], int *cmd_num, int *pid)
 {
-	*current = -1;
-	if (pipe(pipe_fd) < 0)
-		error_exit(3);
-	while (++(*current) != argc - 3)
+	*cmd_num = 0;
+
+	while (++(*cmd_num) != argc - 2)
 	{
+		if (*cmd_num != argc - 3 && pipe(pipe_fd) < 0)
+			error_exit(3);
 		*pid = fork();
 		if (*pid < 0)
 			error_exit(2);
@@ -149,9 +150,12 @@ void	make_proc(int argc, int pipe_fd[], int *current, int *pid)
 
 void	pipex_init(int argc, char **argv, int *hd_flag)
 {
+	if (argv[1] == NULL)
+		exit(EXIT_FAILURE);
 	*hd_flag = 0;
-	if (argv[1] == "here_doc")
+	if (ft_strncmp(argv[1], "here_doc", 8) == 0)
 		*hd_flag = 1;
+
 	if (*hd_flag == 0 && argc < 5)
 		exit(EXIT_FAILURE);
 	else if (*hd_flag == 1 && argc < 6)
@@ -162,25 +166,25 @@ int main(int argc, char **argv, char **env)
 {
 	pid_t	pid;
 	int		pipe_fd[2];
-	int		current;
+	int		cmd_num;
 	int		hd_flag;
 	int		cmd_idx;
 
 	pipex_init(argc, argv, &hd_flag);
-	make_proc(argc, pipe_fd, &current, &pid);
+	make_proc(argc, pipe_fd, &cmd_num, &pid);
 
-	cmd_idx = current + 2 + hd_flag;
-	if (pid == 0 && current == 0)
+	cmd_idx = cmd_num + 1 + hd_flag;
+	if (pid == 0 && cmd_num == 1)
 		first_cmd(argv[1], argv[cmd_idx], env, pipe_fd);
-	else if (pid == 0 && current == argc - 4)
+	else if (pid == 0 && cmd_num == argc - 3)
 		last_cmd(argv[argc - 1], argv[cmd_idx], env, pipe_fd);
-	else if (pid == 0)
-		other_cmd(argv[cmd_idx], env, pipe_fd);
+	// else if (pid == 0)
+	// 	other_cmd(argv[cmd_idx], env, pipe_fd);
 
-	close(pipe_fd[READ]);
-	close(pipe_fd[WRITE]); // 안하면 무한로딩
 	int		wait_status;
 	int		last_status;
+	close(pipe_fd[READ]);
+	close(pipe_fd[WRITE]); // 안하면 무한로딩
 	waitpid(pid, &last_status, 0);
 	while (wait(&wait_status) != -1); // 0넣어서 변수 없애도 되나
 	exit(WEXITSTATUS(last_status));
