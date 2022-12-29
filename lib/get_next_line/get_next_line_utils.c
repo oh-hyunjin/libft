@@ -6,13 +6,13 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/22 09:45:49 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/18 14:53:31 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/29 15:04:54 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int	ft_strlen(char *str)
+int	ft_strlen2(char *str)
 {
 	int	len;
 

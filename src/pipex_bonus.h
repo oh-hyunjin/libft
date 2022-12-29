@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/18 14:38:56 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/28 16:45:26 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/29 15:09:37 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,15 @@
 # include <stdlib.h>
 
 typedef struct s_cmd{
-	int	num;
+	int	cur;
 	int	idx;
+	int	last;
 }	t_cmd;
+
+typedef struct s_hd{
+	int		flag;
+	int		fd;
+}	t_hd;
 
 // libft_test.c
 // char	*ft_strjoin(char const *s1, char const *s2);
