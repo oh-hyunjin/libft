@@ -2,6 +2,8 @@
 	"files.associations": {
 		"ft_printf.h": "c",
 		"locale": "c",
-		"complex": "c"
+		"complex": "c",
+		"pipex.h": "c",
+		"unistd.h": "c"
 	}
 }

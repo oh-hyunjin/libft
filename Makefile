@@ -6,7 +6,7 @@
 #    By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/18 13:53:08 by hyoh              #+#    #+#              #
-#    Updated: 2022/12/27 15:40:18 by hyoh             ###   ########.fr        #
+#    Updated: 2022/12/29 12:05:49 by hyoh             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,23 +17,33 @@ CFLAG	=	-Wall -Wextra -Werror -fsanitize=address
 RM		=	rm -f
 
 LIB_DIR	=	./lib
-SRC_DIR	=	./src
 
-SRC		=	pipex.c
-OBJ		=	$(addprefix $(SRC_DIR)/, $(SRC:.c=.o))
+SRC		=	./src/pipex.c
+SRC_BN	=	./src/pipex_bonus.c
+OBJ		=	$(SRC:.c=.o)
+OBJ_BN	=	$(SRC_BN:.c=.o)
+
+ifdef WITH_BONUS
+	OBJECT = $(OBJ_BN)
+else
+	OBJECT = $(OBJ)
+endif
 
 all	: $(NAME)
 
 %.o : %.c
 	$(CC) $(CFLAG) -c $< -o $@
 
-$(NAME) : $(OBJ)
+$(NAME) : $(OBJECT)
 	make -C $(LIB_DIR)
-	$(CC) $(CFLAG) $(OBJ) -L $(LIB_DIR) -l _ft -o $(NAME)
+	$(CC) $(CFLAG) $(OBJECT) -L $(LIB_DIR) -l _ft -o $(NAME)
+
+bonus :
+	make WITH_BONUS=1 all
 
 clean :
 	make clean -C $(LIB_DIR)
-	$(RM) $(OBJ)
+	$(RM) $(OBJECT)
 
 fclean : clean
 	make fclean -C $(LIB_DIR)

@@ -1,8 +1,6 @@
-EOF
 Makefile
 infile
 lib
-out.txt
 outfile
 pipex
 src
