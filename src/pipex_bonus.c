@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/22 17:48:50 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/29 17:04:01 by hyoh             ###   ########.fr       */
+/*   Updated: 2022/12/30 15:20:50 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,22 +82,16 @@ char	**parse_cmd(char *before)
 	return (after);
 }
 
-void	first_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[], int hd)
+void	first_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[])
 {
 	int		infile_fd;
 	char	**cmd;
 	char	*path;
 
-	// printf("argv : %s\n", argv_cmd);
 	close(pipe_fd[READ]);
-	if (hd != -2)
-		infile_fd = hd;
-	else
-	{
-		infile_fd = open(file, O_RDWR, 0644);
-		if (infile_fd < 0)
-			error_exit(1);
-	}
+	infile_fd = open(file, O_RDWR, 0644);
+	if (infile_fd < 0)
+		error_exit(1);
 
 	cmd = parse_cmd(argv_cmd);
 	path = get_path(cmd[0], env);
@@ -107,15 +101,18 @@ void	first_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[], int hd)
 	error_exit(127);
 }
 
-void	last_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[])
+void	last_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[], int hd)
 {
 	int		outfile_fd;
 	char	**cmd;
 	char	*path;
 
-	// printf("argv : %s\n", argv_cmd);
 	close(pipe_fd[WRITE]);
-	outfile_fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0644);
+	printf("hd : %d\n", hd);
+	if (hd == 0)
+		outfile_fd = open(file, O_RDWR | O_CREAT | O_TRUNC, 0644);
+	else
+		outfile_fd = open(file, O_RDWR | O_CREAT, 0644);
 	if (outfile_fd < 0)
 		error_exit(1);
 	cmd = parse_cmd(argv_cmd);
@@ -131,7 +128,6 @@ void	other_cmd(char *argv_cmd, char **env, int pipe_fd[2][2])
 	char	**cmd;
 	char	*path;
 
-	// printf("argv : %s\n", argv_cmd);
 	close(pipe_fd[OLD][WRITE]);
 	close(pipe_fd[NEW][READ]);
 	cmd = parse_cmd(argv_cmd);
@@ -142,7 +138,7 @@ void	other_cmd(char *argv_cmd, char **env, int pipe_fd[2][2])
 	error_exit(127);
 }
 
-void	make_proc(int cmd_last, int pipe_fd[2][2], int *cmd_cur, int *pid)
+void	make_proc(int cmd_last, int pipe_fd[2][2], int *cmd_cur, int *pid, t_hd *hd)
 {
 	*cmd_cur = -1;
 	while (++(*cmd_cur) <= cmd_last)
@@ -162,6 +158,8 @@ void	make_proc(int cmd_last, int pipe_fd[2][2], int *cmd_cur, int *pid)
 			error_exit(2);
 		else if (*pid == 0)
 			return ;
+		if (*cmd_cur == 0 && hd->flag != 0)
+			close(hd->fd);
 	}
 	// close last old
 	(close(pipe_fd[OLD][READ]), close(pipe_fd[OLD][WRITE])); // 안하면 무한로딩
@@ -175,16 +173,20 @@ int	get_heredoc(char **argv, t_hd *hd)
 	hd->flag = 1;
 	hd->fd = 0;
 	limiter = ft_strjoin(argv[2], "\n");
-	printf("limiter : %s\n", limiter);
-	printf("open : %d\n", hd->fd = open("tmp", O_RDWR | O_CREAT | O_TRUNC, 0644));
+	hd->fd = open("tmp", O_RDWR | O_CREAT | O_TRUNC, 0644);
+	if (hd->fd < 0)
+		error_exit(1);
 	while(1)
 	{
 		write(1, "here_doc) ", 10);
 		temp = get_next_line(0);
+		if (temp == NULL)
+			break ;
 		if (ft_strncmp(temp, limiter, ft_strlen(temp)) == 0) // strlen에 limiter 놔야 되는지..
 			break ;
 		write(hd->fd, temp, ft_strlen(temp));
 	}
+	// close(hd->fd); // test!!!!!!!!!!!!!
 	return (0);
 }
 
@@ -217,18 +219,20 @@ int	main(int argc, char **argv, char **env)
 	int		last_status;
 
 	pipex_init(argc, argv, &hd, pipe_fd, &cmd.last);
-	make_proc(argc - 4 - hd.flag, pipe_fd, &cmd.cur, &pid);
+	make_proc(argc - 4 - hd.flag, pipe_fd, &cmd.cur, &pid, &hd);
 	cmd.idx = cmd.cur + 2 + hd.flag;
 
 	if (pid == 0 && cmd.cur == 0)
 	{
-		// printf("[first cmd]\n");
-		first_cmd(argv[1], argv[cmd.idx], env, pipe_fd[NEW], hd.fd); // new만 사용
+		if(hd.flag == 0)
+			first_cmd(argv[1], argv[cmd.idx], env, pipe_fd[NEW]); // new만 사용
+		else
+			first_cmd("tmp", argv[cmd.idx], env, pipe_fd[NEW]);
 	}
 	else if (pid == 0 && cmd.cur == argc - 4 - hd.flag)
 	{
 		// printf("[last cmd]\n");
-		last_cmd(argv[argc - 1], argv[cmd.idx], env, pipe_fd[OLD]); // old만 사용
+		last_cmd(argv[argc - 1], argv[cmd.idx], env, pipe_fd[OLD], hd.flag); // old만 사용
 	}
 	else if (pid == 0)
 	{
@@ -237,6 +241,7 @@ int	main(int argc, char **argv, char **env)
 	}
 	waitpid(pid, &last_status, 0);
 	while (wait(0) != -1); // 0넣어서 변수 없애도 되나
-	close(hd.fd);
+	if (hd.flag != 0)
+		unlink("tmp");
 	exit(WEXITSTATUS(last_status));
 }
