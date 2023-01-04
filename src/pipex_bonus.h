@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/18 14:38:56 by hyoh              #+#    #+#             */
-/*   Updated: 2023/01/03 16:17:20 by hyoh             ###   ########.fr       */
+/*   Updated: 2023/01/04 14:42:18 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@
 
 # include "../lib/libft/libft.h"
 # include "../lib/get_next_line/get_next_line.h"
-# include <unistd.h> // 지워도 되나
-# include <stdio.h> // 지우기
+# include <unistd.h>
 # include <fcntl.h>
 # include <stdlib.h>
 
@@ -46,13 +45,18 @@ typedef struct s_info{
 	t_hd	hd;
 }	t_info;
 
+// pipex utils
 void	error_exit(char *exe_file, char *cmd, int num);
-char	*get_path(t_info info, char *cmd);
-char	*find_in_env(t_info info, char **paths, char *cmd);
-char	**parse_cmd(char *before);
+void	double_free(char **target, int num);
 int		get_heredoc(char **argv, t_hd *hd);
 void	pipex_init(t_info *info, int pipe_fd[2][2], int *cmd_last);
 
+// ready for exe
+char	*find_in_env(t_info info, char **paths, char *cmd);
+char	*get_path(t_info info, char *cmd);
+char	**parse_cmd(char *before);
+
+// pipex
 void	first_cmd(t_info info, char *argv_cmd, int pipe_fd[]);
 void	last_cmd(t_info info, char *argv_cmd, int pipe_fd[]);
 void	other_cmd(t_info info, char *argv_cmd, int pipe_fd[2][2]);

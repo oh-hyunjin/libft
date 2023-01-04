@@ -6,7 +6,7 @@
 #    By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/18 13:53:08 by hyoh              #+#    #+#              #
-#    Updated: 2023/01/04 13:52:36 by hyoh             ###   ########.fr        #
+#    Updated: 2023/01/04 14:48:46 by hyoh             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,8 +19,8 @@ RM		=	rm -f
 LIB_DIR	=	./lib
 SRCS_DIR	=	./src
 
-SRC		=	pipex.c pipex_utils.c
-SRC_BN	=	pipex_bonus.c pipex_utils_bonus.c
+SRC		=	pipex.c pipex_utils.c ready_for_exe.c
+SRC_BN	=	pipex_bonus.c pipex_utils_bonus.c ready_for_exe_bonus.c
 
 OBJ		=	$(addprefix $(SRCS_DIR)/, $(SRC:.c=.o))
 OBJ_BN	=	$(addprefix $(SRCS_DIR)/, $(SRC_BN:.c=.o))
@@ -45,7 +45,7 @@ bonus :
 
 clean :
 	make clean -C $(LIB_DIR)
-	$(RM) $(OBJECT)
+	$(RM) $(OBJ) $(OBJ_BN)
 
 fclean : clean
 	make fclean -C $(LIB_DIR)

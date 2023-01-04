@@ -5,80 +5,81 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/12/30 16:43:01 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/30 16:49:10 by hyoh             ###   ########.fr       */
+/*   Created: 2022/12/30 17:14:31 by hyoh              #+#    #+#             */
+/*   Updated: 2023/01/04 14:41:16 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	error_exit(int num)
+void	error_exit(char *exe_file, char *cmd, int num)
 {
+	write(2, exe_file, ft_strlen(exe_file));
+	write(2, ": ", 2);
+	write(2, cmd, ft_strlen(cmd));
 	if (num == 1)
-		write(2, "pipex: input: No such file or directory\n", 40);
-	else if (num == 2)
-		write(2, "fork fail\n", 10);
-	else if (num == 3)
-		write(2, "pipe fail\n", 10);
+		write(2, ": No such file or directory\n", 28);
 	else if (num == 127)
 	{
-		write(2, "pipex: fizzBuzz: command not found\n", 35);
+		write(2, ": command not found\n", 20);
 		exit(127);
 	}
 	exit(1);
 }
 
-char	*get_path(char *cmd, char **env)
+void	double_free(char **target, int num)
 {
-	char	**paths;
-
-	if (access(cmd, X_OK) == 0)
-		return (cmd);
-	while (*env != NULL)
-	{
-		if (ft_strnstr(*env, "PATH=", 10) != NULL)
-			break ;
-		env++;
-	}
-	if (*env == NULL)
-		return (0);
-	*env += 5;
-	paths = ft_split(*env, ':'); // free
-	if (paths == NULL)
-		return (0);
-	while (*paths != NULL)
-	{
-		*paths = ft_strjoin(*paths, ft_strjoin("/", cmd));
-		if (access(*paths, X_OK) == 0)
-			break ;
-		paths++;
-	}
-	return (*paths);
+	while (--num != -1)
+		free(target[num]);
+	free(target);
 }
 
-char	**parse_cmd(char *before)
+int	get_heredoc(char **argv, t_hd *hd)
 {
-	char	**after;
-	char	*s_quote;
-	int		quote_flag;
-	int		i;
+	char	*limiter;
+	char	*temp;
 
-	s_quote = before;
-	after = ft_split(before, ' ');
-	i = -1;
-	quote_flag = 0;
-	while (after[++i] != NULL)
+	hd->flag = 1;
+	hd->fd = 0;
+	limiter = ft_strjoin(argv[2], "\n");
+	if (limiter == NULL)
+		exit(EXIT_FAILURE);
+	hd->fd = open("tmp", O_RDWR | O_CREAT | O_TRUNC, 0644);
+	if (hd->fd < 0)
+		exit(EXIT_FAILURE);
+	while (1)
 	{
-		if (after[i][0] == '\'' || after[i][0] == '\"')
-		{
-			quote_flag = 1;
-			after[i] = ft_substr(s_quote, 1, ft_strlen(s_quote) - 2);
-			continue ;
-		}
-		if (quote_flag == 1)
-			after[i] = NULL; //free(after[i]);????
-		else
-			s_quote += (ft_strlen(after[i]) + 1);
+		write(1, "here_doc) ", 10);
+		temp = get_next_line(0);
+		if (temp == NULL)
+			exit(EXIT_FAILURE);
+		if (ft_strncmp(temp, limiter, ft_strlen(temp)) == 0)
+			break ;
+		write(hd->fd, temp, ft_strlen(temp));
 	}
-	return (after);
+	close(hd->fd);
+	return (0);
+}
+
+void	pipex_init(t_info *info, int pipe_fd[2][2], int *cmd_last)
+{
+	if (info->argv[1] == NULL)
+		exit(EXIT_FAILURE);
+	info->exe_file = ft_strrchr(info->argv[0], '/') + 1;
+	if (info->exe_file == NULL)
+		info->exe_file = info->argv[0];
+	info->outfile = info->argv[info->argc - 1];
+	info->hd.fd = -2;
+	info->hd.flag = 0;
+	if (ft_strncmp(info->argv[1], "here_doc", 8) == 0)
+		get_heredoc(info->argv, &info->hd);
+	if (info->hd.flag == 0 && info->argc < 5)
+		exit(EXIT_FAILURE);
+	else if (info->hd.flag == 1 && info->argc != 6)
+		exit(EXIT_FAILURE);
+	*cmd_last = info->argc - 4 - info->hd.flag;
+	pipe_fd[OLD][READ] = -2;
+	pipe_fd[OLD][WRITE] = -2;
+	pipe_fd[NEW][READ] = -2;
+	pipe_fd[NEW][WRITE] = -2;
 }

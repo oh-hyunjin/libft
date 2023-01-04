@@ -6,7 +6,7 @@
 #    By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/18 14:20:55 by hyoh              #+#    #+#              #
-#    Updated: 2023/01/02 12:27:52 by hyoh             ###   ########.fr        #
+#    Updated: 2023/01/04 15:00:24 by hyoh             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,6 @@ RM					=	rm -f
 AR					=	ar -crs
 
 LIBFT_DIR			=	./libft
-FT_PRINTF_DIR		=	./ft_printf
 GET_NEXT_LINE_DIR	=	./get_next_line
 
 LIBFT_SRC			=	ft_isalpha.c \
