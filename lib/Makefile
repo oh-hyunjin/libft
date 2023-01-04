@@ -6,7 +6,7 @@
 #    By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/18 14:20:55 by hyoh              #+#    #+#              #
-#    Updated: 2022/12/18 15:10:10 by hyoh             ###   ########.fr        #
+#    Updated: 2023/01/02 12:27:52 by hyoh             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -56,22 +56,15 @@ LIBFT_SRC			=	ft_isalpha.c \
 						ft_putendl_fd.c \
 						ft_putnbr_fd.c
 
-FT_PRINTF_SRC		=	ft_printf.c \
-						option.c \
-						type.c \
-						put.c \
-						getlen.c \
-
 GET_NEXT_LINE_SRC	=	get_next_line.c \
 						get_next_line_utils.c \
 
 LIBFT_OBJ			=	$(addprefix $(LIBFT_DIR)/, $(LIBFT_SRC:.c=.o))
-FT_PRINTF_OBJ		=	$(addprefix $(FT_PRINTF_DIR)/, $(FT_PRINTF_SRC:.c=.o))
 GET_NEXT_LINE_OBJ	=	$(addprefix $(GET_NEXT_LINE_DIR)/, $(GET_NEXT_LINE_SRC:.c=.o))
 
 all : $(NAME)
 
-$(NAME) : $(LIBFT_OBJ) $(FT_PRINTF_OBJ) $(GET_NEXT_LINE_OBJ)
+$(NAME) : $(LIBFT_OBJ) $(GET_NEXT_LINE_OBJ)
 
 %.o : %.c
 	$(CC) $(CFLAG) -c $< -o $@
@@ -79,7 +72,6 @@ $(NAME) : $(LIBFT_OBJ) $(FT_PRINTF_OBJ) $(GET_NEXT_LINE_OBJ)
 
 clean :
 	$(RM) $(LIBFT_OBJ)
-	$(RM) $(FT_PRINTF_OBJ)
 	$(RM) $(GET_NEXT_LINE_OBJ)
 
 fclean : clean
@@ -87,4 +79,4 @@ fclean : clean
 
 re : fclean all
 
-.PHONY : all clean fclean re
+.PHONY : all clean fclean re libft get_next_line

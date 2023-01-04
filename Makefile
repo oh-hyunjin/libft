@@ -6,7 +6,7 @@
 #    By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/18 13:53:08 by hyoh              #+#    #+#              #
-#    Updated: 2022/12/29 14:10:51 by hyoh             ###   ########.fr        #
+#    Updated: 2023/01/04 13:52:36 by hyoh             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,11 +17,13 @@ CFLAG	=	-Wall -Wextra -Werror -fsanitize=address
 RM		=	rm -f
 
 LIB_DIR	=	./lib
+SRCS_DIR	=	./src
 
-SRC		=	./src/pipex.c
-SRC_BN	=	./src/pipex_bonus.c
-OBJ		=	$(SRC:.c=.o)
-OBJ_BN	=	$(SRC_BN:.c=.o)
+SRC		=	pipex.c pipex_utils.c
+SRC_BN	=	pipex_bonus.c pipex_utils_bonus.c
+
+OBJ		=	$(addprefix $(SRCS_DIR)/, $(SRC:.c=.o))
+OBJ_BN	=	$(addprefix $(SRCS_DIR)/, $(SRC_BN:.c=.o))
 
 ifdef WITH_BONUS
 	OBJECT = $(OBJ_BN)

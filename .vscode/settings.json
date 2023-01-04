@@ -4,6 +4,8 @@
 		"locale": "c",
 		"complex": "c",
 		"pipex.h": "c",
-		"unistd.h": "c"
+		"unistd.h": "c",
+		"stdio.h": "c",
+		"get_next_line.h": "c"
 	}
 }

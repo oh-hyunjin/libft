@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/18 14:38:56 by hyoh              #+#    #+#             */
-/*   Updated: 2022/12/28 16:43:40 by hyoh             ###   ########.fr       */
+/*   Updated: 2023/01/04 08:45:17 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 # define NEW 1
 
 # include "../lib/libft/libft.h"
-# include "../lib/ft_printf/ft_printf.h"
 # include "../lib/get_next_line/get_next_line.h"
 # include <unistd.h> // 지워도 되나
 # include <stdio.h> // 지우기
@@ -31,12 +30,14 @@ typedef struct s_cmd{
 	int	idx;
 }	t_cmd;
 
-// libft_test.c
-// char	*ft_strjoin(char const *s1, char const *s2);
-// int		get_cnt(char const *s, char c);
-// char	*ft_split_2(char const *s, char c, int start);
-// char	**ft_split(char const *s, char c);
-// char	*ft_strnstr(const char *haystack, const char *needle, size_t n);
+
+void	first_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[]);
+void	last_cmd(char *file, char *argv_cmd, char **env, int pipe_fd[]);
+void	make_proc(int argc, int pipe_fd[2], int *cmd_num, int *pid);
+void	error_exit(int num);
+char	*get_path(char *cmd, char **env);
+char	**parse_cmd(char *before);
+
 
 
 #endif

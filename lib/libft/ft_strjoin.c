@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/09 10:45:44 by hyoh              #+#    #+#             */
-/*   Updated: 2022/07/15 16:13:16 by hyoh             ###   ########.fr       */
+/*   Updated: 2023/01/03 13:59:00 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,9 @@ char	*ft_strjoin(char const *s1, char const *s2)
 
 	len1 = 0;
 	len2 = 0;
+
+	if (!s1 || !s2)
+		return (0);
 	while (s1[len1])
 		len1++;
 	while (s2[len2])
