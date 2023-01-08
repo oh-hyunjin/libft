@@ -6,14 +6,14 @@
 #    By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/18 13:53:08 by hyoh              #+#    #+#              #
-#    Updated: 2023/01/04 14:48:46 by hyoh             ###   ########.fr        #
+#    Updated: 2023/01/08 14:14:04 by hyoh             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	pipex
 
 CC		=	cc
-CFLAG	=	-Wall -Wextra -Werror -fsanitize=address
+CFLAG	=	-Wall -Wextra -Werror
 RM		=	rm -f
 
 LIB_DIR	=	./lib

@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 17:14:31 by hyoh              #+#    #+#             */
-/*   Updated: 2023/01/04 14:41:16 by hyoh             ###   ########.fr       */
+/*   Updated: 2023/01/08 14:04:04 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,8 @@ int	get_heredoc(char **argv, t_hd *hd)
 
 void	pipex_init(t_info *info, int pipe_fd[2][2], int *cmd_last)
 {
+	if (info->argc != 5)
+		exit(EXIT_FAILURE);
 	if (info->argv[1] == NULL)
 		exit(EXIT_FAILURE);
 	info->exe_file = ft_strrchr(info->argv[0], '/') + 1;

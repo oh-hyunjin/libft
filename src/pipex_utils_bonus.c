@@ -6,7 +6,7 @@
 /*   By: hyoh <hyoh@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/30 17:14:31 by hyoh              #+#    #+#             */
-/*   Updated: 2023/01/04 14:36:27 by hyoh             ###   ########.fr       */
+/*   Updated: 2023/01/08 14:00:49 by hyoh             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,10 +72,12 @@ void	pipex_init(t_info *info, int pipe_fd[2][2], int *cmd_last)
 	info->hd.fd = -2;
 	info->hd.flag = 0;
 	if (ft_strncmp(info->argv[1], "here_doc", 8) == 0)
+	{
+		if (info->argc != 6)
+			exit(EXIT_FAILURE);
 		get_heredoc(info->argv, &info->hd);
+	}
 	if (info->hd.flag == 0 && info->argc < 5)
-		exit(EXIT_FAILURE);
-	else if (info->hd.flag == 1 && info->argc != 6)
 		exit(EXIT_FAILURE);
 	*cmd_last = info->argc - 4 - info->hd.flag;
 	pipe_fd[OLD][READ] = -2;
